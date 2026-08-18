@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const rabbitmq = require('../config/rabbitmq');
 
 /**
  * Tạo mới Ticket
@@ -20,6 +21,16 @@ const createTicket = async (data, actorId) => {
       },
     },
   });
+
+  // Gửi sự kiện TICKET_CREATED tới RabbitMQ bất đồng bộ
+  try {
+    await rabbitmq.publishMessage('ticket.created.key', { ticketId: ticket.id });
+    console.log(`Published TICKET_CREATED event for ticket_id: ${ticket.id}`);
+  } catch (error) {
+    console.error(`Failed to publish TICKET_CREATED event for ticket_id ${ticket.id}:`, error.message);
+    // Vẫn trả về ticket đã được lưu thành công, không chặn luồng chính
+  }
+
   return ticket;
 };
 

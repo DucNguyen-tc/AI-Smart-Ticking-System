@@ -4,6 +4,10 @@ const { mockReset } = require('jest-mock-extended');
 
 // Mock Prisma
 jest.mock('../config/prisma', () => require('jest-mock-extended').mockDeep());
+// Mock RabbitMQ
+jest.mock('../config/rabbitmq', () => ({
+  publishMessage: jest.fn().mockResolvedValue(true),
+}));
 
 describe('Ticket Service', () => {
   beforeEach(() => {

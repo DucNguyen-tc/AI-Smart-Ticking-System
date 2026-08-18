@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const prisma = require('./config/prisma');
 const redisClient = require('./config/redis');
+const rabbitmq = require('./config/rabbitmq');
 
 const errorHandler = require('./middlewares/errorHandler');
 
@@ -44,13 +45,32 @@ app.use(errorHandler);
 // Start Server
 const startServer = async () => {
   try {
-    // Kết nối Database & Redis
+    // Kết nối Database, Redis & RabbitMQ
     await prisma.$connect();
     await redisClient.connect();
+    await rabbitmq.connect();
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
+
+    // Graceful Shutdown Handler
+    const shutdown = async (signal) => {
+      console.log(`Received ${signal}. Shutting down gracefully...`);
+      server.close(async () => {
+        console.log('HTTP server closed.');
+        await prisma.$disconnect();
+        console.log('Database disconnected.');
+        await redisClient.client.quit();
+        console.log('Redis disconnected.');
+        await rabbitmq.close();
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
