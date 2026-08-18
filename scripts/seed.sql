@@ -1,8 +1,8 @@
--- Seed USERS
-INSERT INTO users (email, name, role) VALUES
-('customer1@example.com', 'Nguyen Khach Hang', 'CUSTOMER'),
-('agent1@example.com', 'Tran Nhan Vien CSKH', 'AGENT'),
-('admin1@example.com', 'Le Quan Tri Vien', 'ADMIN')
+-- Seed USERS (Mật khẩu mặc định là 123456 đã được băm bcrypt)
+INSERT INTO users (email, password, name, role) VALUES
+('customer1@example.com', '$2a$12$R9h/cIPz0gi.URNNX3camOOsrvZ3m9c0m6.rQkR0.Z1y/3B001.mC', 'Nguyen Khach Hang', 'CUSTOMER'),
+('agent1@example.com', '$2a$12$R9h/cIPz0gi.URNNX3camOOsrvZ3m9c0m6.rQkR0.Z1y/3B001.mC', 'Tran Nhan Vien CSKH', 'AGENT'),
+('admin1@example.com', '$2a$12$R9h/cIPz0gi.URNNX3camOOsrvZ3m9c0m6.rQkR0.Z1y/3B001.mC', 'Le Quan Tri Vien', 'ADMIN')
 ON CONFLICT (email) DO NOTHING;
 
 -- Seed FAQS
