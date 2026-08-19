@@ -1,5 +1,21 @@
 const prisma = require('../config/prisma');
 const rabbitmq = require('../config/rabbitmq');
+const { getCache, setCache, deleteCacheByPattern } = require('../config/redis');
+
+/**
+ * Hủy cache của Ticket khi có thay đổi (Create/Update/Delete/Reply)
+ */
+const invalidateTicketCache = async (ticketId) => {
+  try {
+    await deleteCacheByPattern('cache:tickets:*');
+    if (ticketId) {
+      await deleteCacheByPattern(`cache:ticket:${ticketId}`);
+    }
+  } catch (error) {
+    console.error('Failed to invalidate ticket cache:', error.message);
+  }
+};
+
 
 /**
  * Tạo mới Ticket
@@ -31,6 +47,8 @@ const createTicket = async (data, actorId) => {
     // Vẫn trả về ticket đã được lưu thành công, không chặn luồng chính
   }
 
+  await invalidateTicketCache();
+
   return ticket;
 };
 
@@ -38,6 +56,15 @@ const createTicket = async (data, actorId) => {
  * Lấy danh sách Ticket có phân trang và filter
  */
 const getAllTickets = async (filters = {}, page = 1, limit = 10, actor) => {
+  // Tạo cacheKey định danh duy nhất dựa trên vai trò, user và các bộ lọc
+  const cacheKey = `cache:tickets:list:role:${actor.role}:user:${actor.role === 'CUSTOMER' ? actor.id : 'all'}:filters:${JSON.stringify(filters)}:page:${page}:limit:${limit}`;
+  
+  // Kiểm tra Redis cache trước
+  const cachedData = await getCache(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
   const skip = (page - 1) * limit;
   
   const where = {};
@@ -71,7 +98,21 @@ const getAllTickets = async (filters = {}, page = 1, limit = 10, actor) => {
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        {
+          aiAnalysis: {
+            priority: 'desc'
+          }
+        },
+        {
+          aiAnalysis: {
+            sentiment: 'desc'
+          }
+        },
+        {
+          createdAt: 'desc'
+        }
+      ],
       include: {
         user: {
           select: {
@@ -87,13 +128,30 @@ const getAllTickets = async (filters = {}, page = 1, limit = 10, actor) => {
     prisma.ticket.count({ where }),
   ]);
 
-  return { tickets, total };
+  const result = { tickets, total };
+
+  // Lưu vào Redis cache với TTL 5 phút (300 giây)
+  await setCache(cacheKey, result, 300);
+
+  return result;
 };
 
 /**
  * Lấy chi tiết Ticket
  */
 const getTicketById = async (id, actor) => {
+  const cacheKey = `cache:ticket:${id}`;
+  
+  // Kiểm tra Redis cache trước
+  const cachedTicket = await getCache(cacheKey);
+  if (cachedTicket) {
+    // Kiểm tra quyền sở hữu đối với CUSTOMER từ cache
+    if (actor.role === 'CUSTOMER' && cachedTicket.userId !== actor.id) {
+      throw new Error('FORBIDDEN');
+    }
+    return cachedTicket;
+  }
+
   const ticket = await prisma.ticket.findUnique({
     where: { id },
     include: {
@@ -132,6 +190,9 @@ const getTicketById = async (id, actor) => {
   if (actor.role === 'CUSTOMER' && ticket.userId !== actor.id) {
     throw new Error('FORBIDDEN');
   }
+
+  // Lưu vào Redis cache với TTL 5 phút (300 giây)
+  await setCache(cacheKey, ticket, 300);
 
   return ticket;
 };
@@ -197,6 +258,8 @@ const updateTicket = async (id, data, actor) => {
     },
   });
 
+  await invalidateTicketCache(id);
+
   return updatedTicket;
 };
 
@@ -215,6 +278,8 @@ const deleteTicket = async (id) => {
   await prisma.ticket.delete({
     where: { id },
   });
+
+  await invalidateTicketCache(id);
 
   return true;
 };
@@ -264,6 +329,8 @@ const replyTicket = async (ticketId, actor, data) => {
 
     return [reply];
   });
+
+  await invalidateTicketCache(ticketId);
 
   return newReply;
 };

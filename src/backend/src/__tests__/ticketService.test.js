@@ -1,5 +1,6 @@
 const ticketService = require('../services/ticketService');
 const prisma = require('../config/prisma');
+const redis = require('../config/redis');
 const { mockReset } = require('jest-mock-extended');
 
 // Mock Prisma
@@ -8,6 +9,13 @@ jest.mock('../config/prisma', () => require('jest-mock-extended').mockDeep());
 jest.mock('../config/rabbitmq', () => ({
   publishMessage: jest.fn().mockResolvedValue(true),
 }));
+// Mock Redis
+jest.mock('../config/redis', () => ({
+  getCache: jest.fn(),
+  setCache: jest.fn(),
+  deleteCacheByPattern: jest.fn(),
+}));
+
 
 describe('Ticket Service', () => {
   beforeEach(() => {
@@ -44,6 +52,7 @@ describe('Ticket Service', () => {
           user: expect.any(Object),
         },
       });
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:tickets:*');
       expect(result).toEqual(mockTicket);
     });
   });
@@ -63,7 +72,21 @@ describe('Ticket Service', () => {
         where: {},
         skip: 0,
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          {
+            aiAnalysis: {
+              priority: 'desc'
+            }
+          },
+          {
+            aiAnalysis: {
+              sentiment: 'desc'
+            }
+          },
+          {
+            createdAt: 'desc'
+          }
+        ],
         include: expect.any(Object),
       });
       expect(result).toEqual({ tickets: mockTickets, total: 2 });
@@ -102,6 +125,31 @@ describe('Ticket Service', () => {
         include: expect.any(Object),
       });
     });
+
+    it('should return from cache if cache hit', async () => {
+      const mockResult = { tickets: [{ id: '1', title: 'Cached Ticket' }], total: 1 };
+      redis.getCache.mockResolvedValueOnce(mockResult);
+
+      const result = await ticketService.getAllTickets({}, 1, 10, { id: 'agent-1', role: 'AGENT' });
+
+      expect(redis.getCache).toHaveBeenCalled();
+      expect(prisma.ticket.findMany).not.toHaveBeenCalled();
+      expect(result).toEqual(mockResult);
+    });
+
+    it('should query DB and set cache if cache miss', async () => {
+      const mockTickets = [{ id: '1', title: 'DB Ticket' }];
+      redis.getCache.mockResolvedValueOnce(null);
+      prisma.ticket.findMany.mockResolvedValueOnce(mockTickets);
+      prisma.ticket.count.mockResolvedValueOnce(1);
+
+      const result = await ticketService.getAllTickets({}, 1, 10, { id: 'agent-1', role: 'AGENT' });
+
+      expect(redis.getCache).toHaveBeenCalled();
+      expect(prisma.ticket.findMany).toHaveBeenCalled();
+      expect(redis.setCache).toHaveBeenCalledWith(expect.any(String), { tickets: mockTickets, total: 1 }, 300);
+      expect(result).toEqual({ tickets: mockTickets, total: 1 });
+    });
   });
 
   describe('getTicketById', () => {
@@ -129,6 +177,30 @@ describe('Ticket Service', () => {
       const result = await ticketService.getTicketById('ticket-1', { id: 'customer-1', role: 'CUSTOMER' });
       expect(result).toEqual(mockTicket);
     });
+
+    it('should return from cache if cache hit', async () => {
+      const mockTicket = { id: 'ticket-1', userId: 'customer-1' };
+      redis.getCache.mockResolvedValueOnce(mockTicket);
+
+      const result = await ticketService.getTicketById('ticket-1', { id: 'customer-1', role: 'CUSTOMER' });
+
+      expect(redis.getCache).toHaveBeenCalledWith('cache:ticket:ticket-1');
+      expect(prisma.ticket.findUnique).not.toHaveBeenCalled();
+      expect(result).toEqual(mockTicket);
+    });
+
+    it('should query DB and set cache if cache miss', async () => {
+      const mockTicket = { id: 'ticket-1', userId: 'customer-1' };
+      redis.getCache.mockResolvedValueOnce(null);
+      prisma.ticket.findUnique.mockResolvedValueOnce(mockTicket);
+
+      const result = await ticketService.getTicketById('ticket-1', { id: 'customer-1', role: 'CUSTOMER' });
+
+      expect(redis.getCache).toHaveBeenCalledWith('cache:ticket:ticket-1');
+      expect(prisma.ticket.findUnique).toHaveBeenCalled();
+      expect(redis.setCache).toHaveBeenCalledWith('cache:ticket:ticket-1', mockTicket, 300);
+      expect(result).toEqual(mockTicket);
+    });
   });
 
   describe('updateTicket', () => {
@@ -148,6 +220,8 @@ describe('Ticket Service', () => {
         data: { title: 'Updated' },
         include: expect.any(Object),
       });
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:tickets:*');
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:ticket:ticket-1');
       expect(result.title).toBe('Updated');
     });
 
@@ -189,6 +263,8 @@ describe('Ticket Service', () => {
       expect(prisma.ticket.delete).toHaveBeenCalledWith({
         where: { id: 'ticket-1' },
       });
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:tickets:*');
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:ticket:ticket-1');
       expect(result).toBe(true);
     });
   });
@@ -242,7 +318,8 @@ describe('Ticket Service', () => {
         where: { id: 'ticket-1' },
         data: { status: 'RESOLVED' },
       });
-
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:tickets:*');
+      expect(redis.deleteCacheByPattern).toHaveBeenCalledWith('cache:ticket:ticket-1');
       expect(result).toEqual(mockReply);
     });
 

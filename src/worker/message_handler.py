@@ -38,6 +38,6 @@ def handle_message(message: dict):
 
     # 4. Xóa cache trên Redis để buộc Client tải lại dữ liệu mới nhất
     # Xóa cả danh sách ưu tiên và chi tiết ticket đó
-    invalidate_cache("cache:tickets:priority_list")
+    invalidate_cache("cache:tickets:*")
     invalidate_cache(f"cache:ticket:{ticket_id}")
     print(f"[Cache] Invalidated related caches. Done processing ticket_id: {ticket_id}\n")
