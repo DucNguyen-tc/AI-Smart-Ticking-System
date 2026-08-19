@@ -1,5 +1,20 @@
+# Node.js
 node_modules/
-.env
+
+# Python Virtual Environment
+venv/
+.venv/
+env/
+
+# Python cache & build
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# Environments / Sensitive files
+.env
+.env.*
+!.env.example
+
+# Custom files
 docs/PLAN.md
