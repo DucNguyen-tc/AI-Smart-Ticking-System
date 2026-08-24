@@ -4,7 +4,7 @@
 * **Phiên bản:** 1.0
 * **Trạng thái:** Draft / UI Baseline
 * **Phong cách:** Modern SaaS Minimal (Tham khảo: Linear, Vercel, Notion)
-* **Framework:** Next.js / React
+* **Framework:** React (Vite) + Tailwind CSS + shadcn/ui + Zustand
 
 ---
 
@@ -91,23 +91,39 @@ Phong cách **Minimal Dark/Light** với khả năng chuyển đổi theme.
 * **Shadow (Light mode):** `0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)`.
 * **Shadow (Dark mode):** `0 1px 3px rgba(0,0,0,0.3)`.
 
-### 2.4. Component Library (Các thành phần UI tái sử dụng)
+### 2.4. Component Library — shadcn/ui (Các thành phần UI tái sử dụng)
 
-| Component | Mô tả | Variants |
+Dự án sử dụng **shadcn/ui** làm thư viện component chính. shadcn/ui cung cấp các component accessible, customizable và không phụ thuộc vào package bên ngoài (copy-paste component). Các component được cài đặt trực tiếp vào `src/components/ui/` và có thể tùy chỉnh hoàn toàn.
+
+| Component (shadcn/ui) | Mô tả | Sử dụng trong dự án |
 | :--- | :--- | :--- |
-| **Button** | Nút bấm chính | `primary`, `secondary`, `ghost`, `danger` |
-| **Input** | Trường nhập liệu | `text`, `textarea`, `select`, `search` |
-| **Badge** | Nhãn trạng thái / tag | `success`, `warning`, `danger`, `info`, `neutral` |
-| **Card** | Container cho nội dung | `default`, `bordered`, `elevated` |
-| **Table** | Bảng dữ liệu có phân trang | Sortable columns, hover rows |
-| **Modal** | Hộp thoại popup | `confirmation`, `form`, `info` |
-| **Sidebar** | Menu điều hướng bên trái | Collapsible, icon + label |
-| **Toast / Notification** | Thông báo nhẹ góc phải | `success`, `error`, `info` |
-| **Skeleton Loader** | Placeholder loading animation | — |
-| **Empty State** | Hiển thị khi chưa có dữ liệu | Illustration + message |
-| **Avatar** | Hình đại diện người dùng | Circle, initials fallback |
-| **Tabs** | Chuyển đổi giữa các view | Inline, underline style |
+| **Button** | Nút bấm chính | CTA, Submit form, Actions |
+| **Input** | Trường nhập liệu text | Form fields, Search |
+| **Textarea** | Trường nhập nhiều dòng | Nội dung ticket, Reply |
+| **Select** | Dropdown chọn giá trị | Loại dịch vụ, Filter |
+| **Badge** | Nhãn trạng thái / tag | Priority, Status, Sentiment |
+| **Card** | Container cho nội dung | Stat cards, Ticket info, AI panel |
+| **Table** | Bảng dữ liệu | Ticket list, FAQ list |
+| **Dialog** | Hộp thoại popup | Xác nhận xóa, Form thêm FAQ |
+| **Sheet** | Side panel (mobile sidebar) | Sidebar responsive |
+| **Skeleton** | Placeholder loading animation | Loading states |
+| **Avatar** | Hình đại diện người dùng | Agent info, Customer info |
+| **Tabs** | Chuyển đổi giữa các view | Filter tabs |
+| **Tooltip** | Hiển thị thông tin khi hover | Copy clipboard feedback |
+| **Checkbox** | Hộp chọn | Ghi chú nội bộ |
+| **Label** | Nhãn cho input | Form labels |
+| **Separator** | Đường phân cách | Dividers |
+| **Sonner (Toast)** | Thông báo nhẹ | Success/Error notifications |
+| **Dropdown Menu** | Menu dropdown | User menu, Actions |
 | **Pagination** | Điều hướng phân trang | Previous / Next / Page numbers |
+
+**Component tự xây dựng thêm (ngoài shadcn/ui):**
+
+| Component | Mô tả |
+| :--- | :--- |
+| **Sidebar** | Menu điều hướng dashboard (collapsible) |
+| **EmptyState** | Hiển thị khi chưa có dữ liệu (illustration + message) |
+| **ThemeToggle** | Nút chuyển Dark/Light mode |
 
 ---
 
@@ -691,57 +707,68 @@ sequenceDiagram
 
 ## 8. Cấu trúc Thư mục Frontend (Project Structure)
 
+**Tech Stack:** React (Vite) + Tailwind CSS + shadcn/ui + Zustand + React Router DOM
+
 ```
 src/frontend/
 ├── package.json
-├── next.config.js
+├── vite.config.js                   # Vite config (alias @/, proxy)
+├── tailwind.config.js               # Tailwind CSS config
+├── postcss.config.js                # PostCSS config
+├── components.json                  # shadcn/ui config
+├── index.html                       # Vite entry HTML
 ├── public/
 │   ├── favicon.ico
 │   └── logo.svg
 ├── src/
-│   ├── app/                        # Next.js App Router
-│   │   ├── layout.js               # Root layout (theme provider, fonts)
-│   │   ├── page.js                 # Landing page (/)
-│   │   ├── submit-ticket/
-│   │   │   ├── page.js             # Form gửi ticket
-│   │   │   └── success/
-│   │   │       └── page.js         # Xác nhận thành công
-│   │   ├── track/
-│   │   │   ├── page.js             # Tra cứu ticket
-│   │   │   └── [id]/
-│   │   │       └── page.js         # Chi tiết ticket
-│   │   ├── faq/
-│   │   │   └── page.js             # Danh sách FAQ
+│   ├── main.jsx                     # React entry point (ReactDOM.createRoot)
+│   ├── App.jsx                      # Root component (BrowserRouter + Routes)
+│   ├── pages/                       # Page components (React Router)
+│   │   ├── LandingPage.jsx          # Route: /
+│   │   ├── SubmitTicketPage.jsx     # Route: /submit-ticket
+│   │   ├── SubmitSuccessPage.jsx    # Route: /submit-ticket/success
+│   │   ├── TrackTicketPage.jsx      # Route: /track
+│   │   ├── TicketDetailPage.jsx     # Route: /track/:id
+│   │   ├── FAQPage.jsx              # Route: /faq
 │   │   └── agent/
-│   │       ├── layout.js           # Dashboard shell (sidebar + topbar)
-│   │       ├── login/
-│   │       │   └── page.js         # Trang đăng nhập agent
-│   │       ├── dashboard/
-│   │       │   └── page.js         # Dashboard chính
-│   │       ├── tickets/
-│   │       │   └── [id]/
-│   │       │       └── page.js     # Chi tiết ticket + AI
-│   │       └── faqs/
-│   │           └── page.js         # Quản lý FAQ
+│   │       ├── AgentLoginPage.jsx   # Route: /agent/login
+│   │       ├── DashboardPage.jsx    # Route: /agent/dashboard
+│   │       ├── AgentTicketDetailPage.jsx  # Route: /agent/tickets/:id
+│   │       └── ManageFAQPage.jsx    # Route: /agent/faqs
+│   ├── layouts/                     # Layout wrappers
+│   │   ├── CustomerLayout.jsx       # Header + Footer cho Customer Portal
+│   │   └── AgentLayout.jsx          # Dashboard shell (Sidebar + TopBar)
 │   ├── components/
-│   │   ├── ui/                     # Design System Components
-│   │   │   ├── Button.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Badge.jsx
-│   │   │   ├── Card.jsx
-│   │   │   ├── Table.jsx
-│   │   │   ├── Modal.jsx
+│   │   ├── ui/                      # shadcn/ui components (auto-generated)
+│   │   │   ├── button.jsx
+│   │   │   ├── input.jsx
+│   │   │   ├── textarea.jsx
+│   │   │   ├── select.jsx
+│   │   │   ├── badge.jsx
+│   │   │   ├── card.jsx
+│   │   │   ├── table.jsx
+│   │   │   ├── dialog.jsx
+│   │   │   ├── sheet.jsx
+│   │   │   ├── skeleton.jsx
+│   │   │   ├── avatar.jsx
+│   │   │   ├── tabs.jsx
+│   │   │   ├── tooltip.jsx
+│   │   │   ├── checkbox.jsx
+│   │   │   ├── label.jsx
+│   │   │   ├── separator.jsx
+│   │   │   ├── sonner.jsx           # Toast (Sonner)
+│   │   │   ├── dropdown-menu.jsx
+│   │   │   └── pagination.jsx
+│   │   ├── custom/                  # Custom reusable components
 │   │   │   ├── Sidebar.jsx
-│   │   │   ├── Toast.jsx
-│   │   │   ├── Skeleton.jsx
-│   │   │   ├── Pagination.jsx
-│   │   │   └── EmptyState.jsx
-│   │   ├── customer/               # Customer Portal specific
+│   │   │   ├── EmptyState.jsx
+│   │   │   └── ThemeToggle.jsx
+│   │   ├── customer/                # Customer Portal specific
 │   │   │   ├── TicketForm.jsx
 │   │   │   ├── TicketList.jsx
 │   │   │   ├── TicketTimeline.jsx
 │   │   │   └── TicketSuccess.jsx
-│   │   └── agent/                  # CSKH Dashboard specific
+│   │   └── agent/                   # CSKH Dashboard specific
 │   │       ├── StatCards.jsx
 │   │       ├── TicketTable.jsx
 │   │       ├── FilterBar.jsx
@@ -749,11 +776,15 @@ src/frontend/
 │   │       ├── ReplyForm.jsx
 │   │       ├── ReplyHistory.jsx
 │   │       └── FAQTable.jsx
+│   ├── stores/                      # Zustand state management
+│   │   ├── useTicketStore.js        # Ticket state (list, filters, pagination)
+│   │   ├── useAuthStore.js          # Agent authentication state
+│   │   └── useThemeStore.js         # Dark/Light theme state
 │   ├── lib/
-│   │   ├── api.js                  # API client (fetch wrapper)
-│   │   └── utils.js                # Helper functions (format date, etc.)
+│   │   ├── api.js                   # API client (fetch wrapper)
+│   │   ├── utils.js                 # Helper functions (cn, format date, etc.)
+│   │   └── constants.js             # App constants (routes, enums)
 │   └── styles/
-│       ├── globals.css             # CSS variables, reset, typography
-│       └── themes.css              # Light/Dark theme tokens
-└── .env.local
+│       └── globals.css              # Tailwind directives + CSS custom properties
+└── .env
 ```

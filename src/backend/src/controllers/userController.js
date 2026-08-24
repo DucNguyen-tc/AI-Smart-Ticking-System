@@ -27,8 +27,8 @@ const getById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Kiểm tra quyền: Chỉ ADMIN hoặc chính user đó mới được xem thông tin chi tiết
-    if (req.user.role !== 'ADMIN' && req.user.id !== id) {
+    // Kiểm tra quyền: Chỉ ADMIN, AGENT hoặc chính user đó mới được xem thông tin chi tiết
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'AGENT' && req.user.id !== id) {
       return sendError(res, {
         code: 403,
         message: 'Bạn không có quyền truy cập thông tin này',

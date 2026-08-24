@@ -93,7 +93,16 @@ const getAllTickets = async (filters = {}, page = 1, limit = 10, actor) => {
     };
   }
 
-  const [tickets, total] = await Promise.all([
+  // Bộ lọc theo từ khóa tìm kiếm (title hoặc tên khách hàng)
+  if (filters.search) {
+    where.OR = [
+      { title: { contains: filters.search, mode: 'insensitive' } },
+      { user: { name: { contains: filters.search, mode: 'insensitive' } } },
+    ];
+  }
+
+  // Fetch tickets, count total, and compute stats if AGENT/ADMIN
+  const queryPromises = [
     prisma.ticket.findMany({
       where,
       skip,
@@ -126,9 +135,32 @@ const getAllTickets = async (filters = {}, page = 1, limit = 10, actor) => {
       },
     }),
     prisma.ticket.count({ where }),
-  ]);
+  ];
 
-  const result = { tickets, total };
+  if (actor.role === 'AGENT' || actor.role === 'ADMIN') {
+    queryPromises.push(
+      prisma.ticket.count({ where: { aiAnalysis: { priority: 'URGENT' } } }),
+      prisma.ticket.count({ where: { status: 'PENDING' } }),
+      prisma.ticket.count({ where: { status: 'PROCESSED' } }),
+      prisma.ticket.count({ where: { status: 'RESOLVED' } })
+    );
+  }
+
+  const queryResults = await Promise.all(queryPromises);
+  const tickets = queryResults[0];
+  const total = queryResults[1];
+  
+  let stats = undefined;
+  if (actor.role === 'AGENT' || actor.role === 'ADMIN') {
+    stats = {
+      urgent: queryResults[2] || 0,
+      pending: queryResults[3] || 0,
+      processed: queryResults[4] || 0,
+      resolved: queryResults[5] || 0,
+    };
+  }
+
+  const result = { tickets, total, stats };
 
   // Lưu vào Redis cache với TTL 5 phút (300 giây)
   await setCache(cacheKey, result, 300);

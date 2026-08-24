@@ -28,9 +28,10 @@ const getAll = async (req, res, next) => {
       priority: req.query.priority,
       sentiment: req.query.sentiment,
       category: req.query.category,
+      search: req.query.search,
     };
 
-    const { tickets, total } = await ticketService.getAllTickets(filters, page, limit, req.user);
+    const { tickets, total, stats } = await ticketService.getAllTickets(filters, page, limit, req.user);
 
     return sendSuccess(res, {
       message: 'Lấy danh sách Ticket thành công',
@@ -41,6 +42,7 @@ const getAll = async (req, res, next) => {
         limit,
         totalPages: Math.ceil(total / limit),
       },
+      stats,
     });
   } catch (error) {
     next(error);

@@ -17,8 +17,8 @@ router.post(
   userController.create
 );
 
-// GET /api/v1/users - Chỉ ADMIN được xem danh sách
-router.get('/', authorize('ADMIN'), userController.getAll);
+// GET /api/v1/users - ADMIN và AGENT được xem danh sách
+router.get('/', authorize('ADMIN', 'AGENT'), userController.getAll);
 
 // GET /api/v1/users/:id - ADMIN hoặc user chủ sở hữu được xem (check logic trong controller)
 router.get('/:id', userController.getById);
