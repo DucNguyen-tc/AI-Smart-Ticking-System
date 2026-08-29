@@ -105,9 +105,18 @@ describe('User Service', () => {
       await expect(userService.updateUser('1', { name: 'New Name' })).rejects.toThrow('USER_NOT_FOUND');
     });
 
+    it('should throw an error if updating to an existing email', async () => {
+      const existingUser = { id: '1', email: 'old@example.com', name: 'Old' };
+      prisma.user.findUnique.mockResolvedValueOnce(existingUser); // checks user existence
+      prisma.user.findUnique.mockResolvedValueOnce({ id: '2', email: 'new@example.com' }); // existing email check
+
+      await expect(userService.updateUser('1', { email: 'new@example.com' })).rejects.toThrow('EMAIL_EXISTS');
+    });
+
     it('should update user successfully', async () => {
       const existingUser = { id: '1', email: 'old@example.com', name: 'Old' };
       prisma.user.findUnique.mockResolvedValueOnce(existingUser); // checks user existence
+      // It will not trigger the existing email check since we don't provide email in this test, or we can provide the same email
 
       const updatedUser = { id: '1', email: 'old@example.com', name: 'New Name' };
       prisma.user.update.mockResolvedValueOnce(updatedUser);

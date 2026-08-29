@@ -89,7 +89,16 @@ describe('Ticket Service', () => {
         ],
         include: expect.any(Object),
       });
-      expect(result).toEqual({ tickets: mockTickets, total: 2 });
+      expect(result).toEqual({
+        tickets: mockTickets,
+        total: 2,
+        stats: {
+          urgent: 0,
+          pending: 0,
+          processed: 0,
+          resolved: 0,
+        },
+      });
     });
 
     it('should filter only own tickets for CUSTOMER', async () => {
@@ -145,10 +154,20 @@ describe('Ticket Service', () => {
 
       const result = await ticketService.getAllTickets({}, 1, 10, { id: 'agent-1', role: 'AGENT' });
 
+      const expectedResult = {
+        tickets: mockTickets,
+        total: 1,
+        stats: {
+          urgent: 0,
+          pending: 0,
+          processed: 0,
+          resolved: 0,
+        },
+      };
       expect(redis.getCache).toHaveBeenCalled();
       expect(prisma.ticket.findMany).toHaveBeenCalled();
-      expect(redis.setCache).toHaveBeenCalledWith(expect.any(String), { tickets: mockTickets, total: 1 }, 300);
-      expect(result).toEqual({ tickets: mockTickets, total: 1 });
+      expect(redis.setCache).toHaveBeenCalledWith(expect.any(String), expectedResult, 300);
+      expect(result).toEqual(expectedResult);
     });
   });
 

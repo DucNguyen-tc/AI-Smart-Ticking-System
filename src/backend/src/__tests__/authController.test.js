@@ -44,17 +44,27 @@ describe('Auth Controller', () => {
 
     it('should return 201 on success', async () => {
       mockReq.body = { email: 'test@example.com', password: 'password', name: 'Test' };
-      const expectedUser = { id: '1', email: 'test@example.com', name: 'Test' };
-      
-      authService.register.mockResolvedValueOnce(expectedUser);
+      const mockUser = { id: '1', email: 'test@example.com', name: 'Test' };
+      authService.register.mockResolvedValueOnce(mockUser);
 
       await authController.register(mockReq, mockRes, mockNext);
 
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,
-        data: { user: expectedUser }
+        message: 'Đăng ký tài khoản thành công',
+        data: { user: mockUser }
       }));
+    });
+
+    it('should call next(error) if service throws generic error', async () => {
+      mockReq.body = { email: 'test@example.com', password: 'password', name: 'Test' };
+      const error = new Error('Database down');
+      authService.register.mockRejectedValueOnce(error);
+
+      await authController.register(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(error);
     });
   });
 
@@ -89,6 +99,16 @@ describe('Auth Controller', () => {
         success: true,
         data: expectedResult
       }));
+    });
+
+    it('should call next(error) if service throws generic error', async () => {
+      mockReq.body = { email: 'test@example.com', password: 'password' };
+      const error = new Error('Database down');
+      authService.login.mockRejectedValueOnce(error);
+
+      await authController.login(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(error);
     });
   });
 });

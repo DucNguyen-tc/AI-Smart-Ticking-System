@@ -49,6 +49,52 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./src/backend
+    container_name: smart-ticketing-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./src/backend/.env.docker
+    networks:
+      - ticketing-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./src/worker
+    container_name: smart-ticketing-worker
+    env_file:
+      - ./src/worker/.env.docker
+    networks:
+      - ticketing-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./src/frontend
+    container_name: smart-ticketing-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - ticketing-network
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   pgdata:
 
