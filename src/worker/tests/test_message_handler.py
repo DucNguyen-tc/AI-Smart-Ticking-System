@@ -1,6 +1,6 @@
-import pytest
 from unittest.mock import patch, MagicMock
 from message_handler import handle_message
+
 
 @patch('message_handler.get_ticket')
 @patch('message_handler.analyze_ticket')
@@ -21,7 +21,7 @@ def test_handle_message_success(
         "service_type": "TECHNICAL_BUG"
     }
     mock_get_ticket.return_value = mock_ticket
-    
+
     mock_analysis = {
         "sentiment": "NEUTRAL",
         "priority": "HIGH",
@@ -45,6 +45,7 @@ def test_handle_message_success(
     mock_save_analysis.assert_called_once_with("test-uuid", mock_analysis)
     mock_update_status.assert_called_once_with("test-uuid", "PROCESSED")
     assert mock_invalidate_cache.call_count == 2
+
 
 @patch('message_handler.get_ticket')
 @patch('gemini_client.genai.GenerativeModel')
@@ -94,6 +95,7 @@ def test_handle_message_billing_double_charge(
     mock_update_status.assert_called_once_with("double-charge-uuid", "PROCESSED")
     assert mock_invalidate_cache.call_count == 2
 
+
 @patch('message_handler.get_ticket')
 @patch('gemini_client.genai.GenerativeModel')
 @patch('message_handler.save_ai_analysis')
@@ -141,4 +143,3 @@ def test_handle_message_password_reset(
     assert saved_analysis["priority"] == "LOW"
     mock_update_status.assert_called_once_with("password-reset-uuid", "PROCESSED")
     assert mock_invalidate_cache.call_count == 2
-

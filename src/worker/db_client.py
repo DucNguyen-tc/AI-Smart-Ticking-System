@@ -2,6 +2,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from config import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD
 
+
 def get_connection():
     return psycopg2.connect(
         host=POSTGRES_HOST,
@@ -10,6 +11,7 @@ def get_connection():
         user=POSTGRES_USER,
         password=POSTGRES_PASSWORD
     )
+
 
 def get_ticket(ticket_id: str) -> dict:
     """
@@ -27,6 +29,7 @@ def get_ticket(ticket_id: str) -> dict:
     finally:
         conn.close()
 
+
 def save_ai_analysis(ticket_id: str, analysis: dict):
     """
     Lưu kết quả phân tích của Gemini vào bảng ai_analyses.
@@ -37,9 +40,12 @@ def save_ai_analysis(ticket_id: str, analysis: dict):
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO ai_analyses (ticket_id, sentiment, priority, category, summary, suggested_reply, confidence_score, created_at)
+                INSERT INTO ai_analyses (
+                    ticket_id, sentiment, priority, category,
+                    summary, suggested_reply, confidence_score, created_at
+                )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
-                ON CONFLICT (ticket_id) DO UPDATE 
+                ON CONFLICT (ticket_id) DO UPDATE
                 SET sentiment = EXCLUDED.sentiment,
                     priority = EXCLUDED.priority,
                     category = EXCLUDED.category,
@@ -64,6 +70,7 @@ def save_ai_analysis(ticket_id: str, analysis: dict):
         raise e
     finally:
         conn.close()
+
 
 def update_ticket_status(ticket_id: str, status: str = 'PROCESSED'):
     """

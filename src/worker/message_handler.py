@@ -2,6 +2,7 @@ from db_client import get_ticket, save_ai_analysis, update_ticket_status
 from gemini_client import analyze_ticket
 from redis_client import invalidate_cache
 
+
 def handle_message(message: dict):
     """
     Điều phối luồng xử lý:
@@ -34,7 +35,7 @@ def handle_message(message: dict):
     # 3. Lưu kết quả phân tích và cập nhật trạng thái sang PROCESSED trong DB
     save_ai_analysis(ticket_id, analysis_result)
     update_ticket_status(ticket_id, 'PROCESSED')
-    print(f"[Database] Saved analysis & updated ticket status to PROCESSED.")
+    print("[Database] Saved analysis & updated ticket status to PROCESSED.")
 
     # 4. Xóa cache trên Redis để buộc Client tải lại dữ liệu mới nhất
     # Xóa cả danh sách ưu tiên và chi tiết ticket đó
