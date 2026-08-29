@@ -1,0 +1,85 @@
+name: Smart Ticketing CI Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint-and-test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: cd src/backend && npm ci
+      - name: Lint Backend
+        run: cd src/backend && npx eslint src/ --max-warnings=0
+      - name: Test Backend
+        run: cd src/backend && npm test -- --coverage
+
+  lint-and-test-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: cd src/worker && pip install -r requirements.txt
+      - name: Lint Worker
+        run: cd src/worker && python -m flake8 --max-line-length=120 --exclude=venv,__pycache__ .
+      - name: Test Worker
+        env:
+          GEMINI_API_KEY: "dummy-key-for-testing"
+        run: cd src/worker && python -m pytest tests/ -v --tb=short
+
+  lint-and-test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: cd src/frontend && npm ci
+      - name: Lint Frontend
+        run: cd src/frontend && npm run lint
+      - name: Build Frontend
+        run: cd src/frontend && npm run build
+
+  build-and-push:
+    needs: [lint-and-test-backend, lint-and-test-worker, lint-and-test-frontend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-backend:latest
+      - name: Build & Push Worker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/worker
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-worker:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-worker:latest
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-frontend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-frontend:latest
