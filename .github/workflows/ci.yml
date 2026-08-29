@@ -31,6 +31,8 @@ jobs:
       - name: Lint Worker
         run: cd src/worker && python -m flake8 --max-line-length=120 --exclude=venv,__pycache__ .
       - name: Test Worker
+        env:
+          GEMINI_API_KEY: "dummy-key-for-testing"
         run: cd src/worker && python -m pytest tests/ -v --tb=short
 
   lint-and-test-frontend:
