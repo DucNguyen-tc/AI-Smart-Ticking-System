@@ -258,7 +258,7 @@ describe('Ticket Service', () => {
       prisma.ticket.findUnique.mockResolvedValueOnce(mockTicket);
       prisma.ticket.update.mockResolvedValueOnce({ ...mockTicket, status: 'PROCESSED' });
 
-      const result = await ticketService.updateTicket(
+      await ticketService.updateTicket(
         'ticket-1',
         { status: 'PROCESSED', serviceType: 'ECOMMERCE' },
         { id: 'agent-1', role: 'AGENT' }

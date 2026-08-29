@@ -2,7 +2,7 @@ const authService = require('../services/authService');
 const prisma = require('../config/prisma');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { mockDeep, mockReset } = require('jest-mock-extended');
+const { mockReset } = require('jest-mock-extended');
 
 // Mock dependencies
 jest.mock('../config/prisma', () => require('jest-mock-extended').mockDeep());

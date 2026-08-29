@@ -1,7 +1,7 @@
 const userService = require('../services/userService');
 const prisma = require('../config/prisma');
 const bcrypt = require('bcryptjs');
-const { mockDeep, mockReset } = require('jest-mock-extended');
+const { mockReset } = require('jest-mock-extended');
 
 // Mock dependencies
 jest.mock('../config/prisma', () => require('jest-mock-extended').mockDeep());
