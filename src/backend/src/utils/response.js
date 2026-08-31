@@ -17,13 +17,14 @@
  * @param {any} options.data - Dữ liệu trả về (object hoặc array, default: null)
  * @param {Object|null} options.meta - Thông tin bổ sung như phân trang (default: null)
  */
-const sendSuccess = (res, { code = 200, message = 'Success', data = null, meta = null } = {}) => {
+const sendSuccess = (res, { code = 200, message = 'Success', data = null, meta = null, ...rest } = {}) => {
   return res.status(code).json({
     success: true,
     code,
     message,
     data,
-    meta
+    meta,
+    ...rest
   });
 };
 
