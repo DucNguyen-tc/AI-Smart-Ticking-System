@@ -1,29 +1,49 @@
-# AI-Powered Smart Ticketing & CSKH System
+# 🌟 AI-Powered Smart Ticketing & CSKH System
 
-Hệ thống Xử lý Hỗ trợ Khách hàng Tự động hóa bằng AI theo kiến trúc **Microservices & Event-Driven**. Dự án nhằm tối ưu hóa quy trình tiếp nhận, phân loại và phản hồi yêu cầu hỗ trợ (tickets) tự động bằng cách tích hợp mô hình ngôn ngữ lớn (LLM - Gemini 1.5 Flash).
+[![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Python](https://img.shields.io/badge/Python-Worker-3776AB?style=for-the-badge&logo=python)](https://python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-4169E1?style=for-the-badge&logo=postgresql)](https://postgresql.org/)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-AMQP-FF6600?style=for-the-badge&logo=rabbitmq)](https://www.rabbitmq.com/)
+[![Redis](https://img.shields.io/badge/Redis-Caching-DC382D?style=for-the-badge&logo=redis)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+
+Hệ thống Xử lý Hỗ trợ Khách hàng (CSKH) Tự động hóa bằng AI theo kiến trúc **Microservices & Event-Driven**. Dự án nhằm tối ưu hóa quy trình tiếp nhận, phân loại và phản hồi yêu cầu hỗ trợ (tickets) tự động bằng cách tích hợp mô hình ngôn ngữ lớn (LLM - Gemini 1.5 Flash).
 
 ---
 
 ## 🚀 Tính năng nổi bật (Key Features)
 
-- **Tiếp nhận bất đồng bộ (Asynchronous API):** Đảm bảo tốc độ phản hồi phía client cực nhanh (< 100ms) nhờ hàng đợi tin nhắn.
-- **Phân tích AI tự động (AI Analysis):** Tự động phân tích cảm xúc (Sentiment), phân loại danh mục (Category), xác định độ ưu tiên (Priority), tóm tắt ticket và sinh bản nháp câu trả lời gợi ý.
-- **Hạ tầng bổ trợ Dockerized:** Đóng gói PostgreSQL, Redis và RabbitMQ chạy cục bộ dễ dàng.
-- **Dashboard quản trị thông minh:** Giao diện trực quan hiển thị danh sách ticket theo mức độ ưu tiên, cảnh báo các trường hợp khẩn cấp (URGENT, ANGRY) lên hàng đầu.
+### 🤖 Phân tích AI Tự động (Smart AI Analysis)
+- Tự động phân tích sắc thái cảm xúc (Sentiment) của khách hàng (POSITIVE, NEUTRAL, ANGRY).
+- Tự động phân loại danh mục (Category) và gán mức độ ưu tiên (Priority) dựa trên mức độ nghiêm trọng.
+- AI tự động tóm tắt nội dung Ticket và soạn sẵn bản nháp câu trả lời (Suggested Reply) cho nhân viên CSKH.
+
+### ⚡ Xử lý Bất đồng bộ (Event-Driven Architecture)
+- Tích hợp **RabbitMQ** làm Message Queue. Client khi tạo Ticket sẽ nhận được response ngay lập tức (< 100ms) mà không phải chờ AI xử lý.
+- AI Worker (Python) hoạt động độc lập ngầm (Background Job), nhận tin nhắn từ RabbitMQ và đẩy kết quả phân tích về Database.
+
+### 🛡️ Bảo mật & Hiệu năng
+- Tích hợp **Redis** để giới hạn số lần gọi API (Rate Limiting) nhằm chống spam (DDoS/Brute Force).
+- Xác thực bằng **JWT (JSON Web Token)** với phân quyền (Role-based Access Control) phân tách rõ ràng giữa CUSTOMER, AGENT, và ADMIN.
+
+### 💻 Giao diện Portal Trực quan
+- Frontend xây dựng bằng **React & Vite** với thiết kế hiện đại, mượt mà.
+- **Dashboard CSKH** hiển thị danh sách ticket theo mức độ ưu tiên ưu tiên xử lý các vé `URGENT` và khách hàng `ANGRY` lên đầu.
 
 ---
 
-## 🛠️ Công nghệ tích hợp (Tech Stack)
+## 🛠️ Công nghệ sử dụng (Tech Stack)
 
-- **Backend API:** Node.js (Express)
-- **AI Worker:** Python (Gemini 1.5 Flash API)
-- **Frontend Portal/Dashboard:** Next.js / React
-- **Database:** PostgreSQL (lưu trữ quan hệ dữ liệu)
-- **Message Queue:** RabbitMQ (quản lý xử lý bất đồng bộ)
-- **Cache & Rate Limit:** Redis
-- **Containerization:** Docker & Docker Compose
-- **Orchestration:** Kubernetes (K3s / k3d)
-- **CI/CD:** GitHub Actions
+| Thành phần | Công nghệ | Chi tiết |
+| :--- | :--- | :--- |
+| **Frontend** | React, Vite, Tailwind CSS | Xây dựng Single Page App (SPA) với UI mượt mà |
+| **Backend API** | Node.js, Express, Prisma ORM | Xử lý Core Business Logic, Authentication, API |
+| **AI Worker** | Python, Google GenAI SDK | Chuyên xử lý tác vụ nặng giao tiếp với LLM |
+| **Database** | PostgreSQL | Lưu trữ dữ liệu quan hệ chặt chẽ (Users, Tickets) |
+| **Message Queue**| RabbitMQ | Điều phối luồng xử lý bất đồng bộ giữa Node và Python |
+| **Caching** | Redis | Rate Limiting, tối ưu hóa truy xuất dữ liệu |
+| **DevOps** | Docker, Docker Compose, Nginx | Container hóa 7 services, Reverse Proxy cho Production |
 
 ---
 
@@ -31,101 +51,68 @@ Hệ thống Xử lý Hỗ trợ Khách hàng Tự động hóa bằng AI theo k
 
 ```text
 smart-ticketing-system/
-├── .github/
-│   └── workflows/           # CI/CD pipeline (Giai đoạn 4)
-├── docs/                    # Tài liệu thiết kế hệ thống
-│   ├── REQUIREMENTS.md
-│   ├── ARCHITECTURE.md
-│   ├── DATABASE_DESIGN.md
-│   ├── API_SPECIFICATION.md
-│   ├── DEPLOYMENT_PLAN.md
-│   └── PLAN.md
+├── docs/                    # Tài liệu thiết kế hệ thống chi tiết
 ├── src/
 │   ├── backend/             # Node.js Express API Service
-│   │   ├── package.json
-│   │   ├── .env.example
-│   │   └── ...
-│   ├── worker/              # Python AI Worker Service
-│   │   ├── requirements.txt
-│   │   ├── .env.example
-│   │   └── ...
-│   └── frontend/            # Next.js Web App Client & Dashboard (Giai đoạn 4)
-├── k8s/                     # Kubernetes manifests (Giai đoạn 5)
-├── scripts/                 # Helper scripts (seed data, DDL migration)
-│   ├── init.sql
-│   └── seed.sql
-├── docker-compose.yml       # Cấu hình hạ tầng cục bộ (PostgreSQL, Redis, RabbitMQ)
-├── .gitignore
+│   ├── worker/              # Python AI Worker Service (Gemini Integration)
+│   └── frontend/            # React/Vite Web App Client & Dashboard
+├── scripts/                 # Scripts tiện ích (Khởi tạo DB, Seed dữ liệu)
+├── docker-compose.yml       # Cấu hình hạ tầng Dev Local (Postgres, Redis, RabbitMQ)
+├── docker-compose.prod.yml  # Cấu hình hạ tầng Production (7 services + Nginx)
 └── README.md
 ```
 
 ---
 
-## 💻 Hướng dẫn chạy dự án cục bộ (Local Setup Guide)
+## 💻 Hướng dẫn chạy dự án cục bộ (Local Development)
 
-### 1. Yêu cầu hệ thống (Prerequisites)
-- Docker & Docker Compose
-- Node.js (v18+)
-- Python (v3.10+)
-
-### 2. Khởi động hạ tầng phụ trợ (PostgreSQL, Redis, RabbitMQ)
-Tại thư mục gốc của dự án, chạy lệnh sau:
+### 1. Khởi động hạ tầng phụ trợ
+Dự án sử dụng Docker để giả lập hạ tầng gồm PostgreSQL, Redis, và RabbitMQ.
 ```bash
+# Tại thư mục gốc của dự án
 docker compose up -d
 ```
-Kiểm tra trạng thái các service:
+
+### 2. Cấu hình Backend (Node.js)
 ```bash
-docker compose ps
+cd src/backend
+npm install
+# Copy .env.example thành .env và cấu hình DB URL
+npx prisma db push # Đẩy schema vào Database
+npm run dev
 ```
-- **PostgreSQL:** Port `5432`
-- **Redis:** Port `6379`
-- **RabbitMQ:** Port `5672` (Management Dashboard tại: `http://localhost:15672` với user/pass: `admin/admin123`)
 
-### 3. Cấu hình & Chạy Backend Service
-1. Di chuyển vào thư mục backend:
-   ```bash
-   cd src/backend
-   ```
-2. Cài đặt các package phụ thuộc:
-   ```bash
-   npm install
-   ```
-3. Tạo file cấu hình môi trường `.env` từ `.env.example` và điều chỉnh các thông số kết nối.
-4. Chạy service ở chế độ dev:
-   ```bash
-   npm run dev
-   ```
+### 3. Cấu hình AI Worker (Python)
+```bash
+cd src/worker
+python -m venv venv
+source venv/bin/activate # Hoặc .\venv\Scripts\Activate.ps1 trên Windows
+pip install -r requirements.txt
+# Copy .env.example thành .env và điền GEMINI_API_KEY
+python worker.py
+```
 
-### 4. Cấu hình & Chạy AI Worker (Python)
-1. Di chuyển vào thư mục worker:
-   ```bash
-   cd src/worker
-   ```
-2. Tạo môi trường ảo (Virtual Environment) và kích hoạt:
-   ```bash
-   python -m venv venv
-   # Trên Windows (PowerShell):
-   .\venv\Scripts\Activate.ps1
-   # Trên Linux/macOS:
-   source venv/bin/activate
-   ```
-3. Cài đặt các thư viện phụ thuộc:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Tạo file cấu hình môi trường `.env` từ `.env.example` và thêm khóa `GEMINI_API_KEY`.
-5. Chạy Worker:
-   ```bash
-   python worker.py
-   ```
+### 4. Cấu hình Frontend (React)
+```bash
+cd src/frontend
+npm install
+npm run dev
+```
 
 ---
 
-## 📖 Tài liệu liên quan (Documentation Links)
+## 🌍 Triển khai lên Production (VPS)
+Dự án được thiết kế chuẩn mực để có thể Deploy dễ dàng lên môi trường Linux VPS (Ubuntu) bằng Docker.
+Tất cả 7 services (Nginx, Frontend, Backend, Worker, DB, Queue, Cache) đều được container hóa và chạy độc lập.
 
-Các tài liệu thiết kế chi tiết nằm tại thư mục [docs/](./docs/):
+Bạn có thể xem file `docker-compose.prod.yml` và tham khảo tài liệu [DEPLOYMENT_PLAN.md](./docs/DEPLOYMENT_PLAN.md) để biết thêm chi tiết.
+
+---
+
+## 📖 Hệ thống Tài liệu Thiết kế
+Các tài liệu thiết kế chi tiết (Software Development Lifecycle) nằm tại thư mục [docs/](./docs/):
 - **Yêu cầu dự án:** [REQUIREMENTS.md](./docs/REQUIREMENTS.md)
 - **Kiến trúc hệ thống:** [ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 - **Thiết kế cơ sở dữ liệu:** [DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md)
 - **Đặc tả API:** [API_SPECIFICATION.md](./docs/API_SPECIFICATION.md)
-- **Kế hoạch triển khai tổng thể:** [PLAN.md](./docs/PLAN.md)
+- **Kế hoạch triển khai:** [PLAN.md](./docs/PLAN.md)
