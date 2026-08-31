@@ -199,13 +199,7 @@ export function AgentTicketDetailPage() {
                   </Badge>
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Phân loại</span>
-                <div>
-                  <Badge variant="outline" className="text-xs">{ai.category || 'N/A'}</Badge>
-                </div>
-              </div>
-              <div className="space-y-1">
+              <div className="space-y-1 col-span-2">
                 <span className="text-xs text-muted-foreground">Độ tin cậy</span>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
