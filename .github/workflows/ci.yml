@@ -83,3 +83,57 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-frontend:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/smart-ticketing-frontend:latest
+
+  deploy-to-vps:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH (with Health Check & Rollback)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ~/smart-ticketing
+            DEPLOY_SHA="${{ github.sha }}"
+            COMPOSE="docker compose -f docker-compose.prod.yml"
+
+            echo "📦 [1/5] Lưu image tag hiện tại để rollback nếu cần..."
+            CURRENT_TAG=$(grep "^DEPLOY_TAG=" .env | cut -d '=' -f2)
+            echo "   Current tag: $CURRENT_TAG"
+
+            echo "📥 [2/5] Pull images mới (tag: $DEPLOY_SHA)..."
+            sed -i "s/^DEPLOY_TAG=.*/DEPLOY_TAG=$DEPLOY_SHA/" .env
+            $COMPOSE pull backend worker frontend
+
+            echo "🚀 [3/5] Deploy containers mới..."
+            $COMPOSE up -d --no-deps backend worker frontend
+
+            echo "🏥 [4/5] Health check sau deploy (chờ tối đa 60s)..."
+            HEALTH_OK=false
+            for i in $(seq 1 12); do
+              sleep 5
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/v1/health || echo "000")
+              echo "   Attempt $i/12: HTTP $HTTP_CODE"
+              if [ "$HTTP_CODE" = "200" ]; then
+                HEALTH_OK=true
+                break
+              fi
+            done
+
+            if [ "$HEALTH_OK" = "true" ]; then
+              echo "✅ [5/5] Deploy thành công! Health check PASSED."
+              docker image prune -f
+            else
+              echo "❌ [5/5] Health check FAILED! Rolling back to tag: $CURRENT_TAG..."
+              sed -i "s/^DEPLOY_TAG=.*/DEPLOY_TAG=$CURRENT_TAG/" .env
+              $COMPOSE pull backend worker frontend
+              $COMPOSE up -d --no-deps backend worker frontend
+              echo "🔄 Rollback hoàn tất. Kiểm tra lại health..."
+              sleep 10
+              curl -sf http://localhost/api/v1/health || echo "⚠️ Rollback health check cũng thất bại!"
+              exit 1
+            fi
