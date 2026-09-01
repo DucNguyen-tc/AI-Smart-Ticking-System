@@ -107,10 +107,10 @@ jobs:
 
             echo "[2/5] Pull images mới (tag: $DEPLOY_SHA)..."
             sed -i "s/^DEPLOY_TAG=.*/DEPLOY_TAG=$DEPLOY_SHA/" .env
-            $COMPOSE pull backend worker frontend
+            $COMPOSE pull
 
             echo "[3/5] Deploy containers mới..."
-            $COMPOSE up -d --no-deps backend worker frontend
+            $COMPOSE up -d
 
             echo "[4/5] Health check sau deploy (chờ tối đa 60s)..."
             HEALTH_OK=false
@@ -130,8 +130,8 @@ jobs:
             else
               echo "[5/5] Health check FAILED! Rolling back to tag: $CURRENT_TAG..."
               sed -i "s/^DEPLOY_TAG=.*/DEPLOY_TAG=$CURRENT_TAG/" .env
-              $COMPOSE pull backend worker frontend
-              $COMPOSE up -d --no-deps backend worker frontend
+              $COMPOSE pull
+              $COMPOSE up -d
               echo "Rollback hoàn tất. Kiểm tra lại health..."
               sleep 10
               curl -sf http://localhost/api/v1/health || echo "Rollback health check cũng thất bại!"

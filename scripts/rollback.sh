@@ -9,8 +9,8 @@ cd ~/smart-ticketing
 echo "Rolling back to tag: $TAG..."
 sed -i "s/^DEPLOY_TAG=.*/DEPLOY_TAG=$TAG/" .env
 
-docker compose -f docker-compose.prod.yml pull backend worker frontend
-docker compose -f docker-compose.prod.yml up -d --no-deps backend worker frontend
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
 
 echo "Waiting for health check..."
 sleep 15
