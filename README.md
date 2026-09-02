@@ -101,11 +101,11 @@ npm run dev
 
 ---
 
-## 🌍 Triển khai lên Production (VPS)
-Dự án được thiết kế chuẩn mực để có thể Deploy dễ dàng lên môi trường Linux VPS (Ubuntu) bằng Docker.
-Tất cả 7 services (Nginx, Frontend, Backend, Worker, DB, Queue, Cache) đều được container hóa và chạy độc lập.
+## 🌍 Triển khai lên Production (Azure VPS)
+Dự án được container hóa toàn bộ bằng Docker và triển khai thực tế trên môi trường **Azure VPS (Ubuntu 22.04 LTS)**.
+Tất cả 7 services (Nginx Reverse Proxy, Frontend, Backend, Worker, Database PostgreSQL, RabbitMQ Message Queue, Redis Cache) đều hoạt động độc lập và bảo mật với SSL/HTTPS.
 
-Bạn có thể xem file `docker-compose.prod.yml` và tham khảo tài liệu [DEPLOYMENT_PLAN.md](./docs/DEPLOYMENT_PLAN.md) để biết thêm chi tiết.
+Bạn có thể xem file `docker-compose.prod.yml` và tham khảo tài liệu [DEPLOYMENT_PLAN.md](./docs/DEPLOYMENT_PLAN.md) hoặc [PLAN.md - Task 6.1](./docs/PLAN.md) để biết thêm chi tiết.
 
 ---
 

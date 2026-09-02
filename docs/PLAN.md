@@ -1209,7 +1209,8 @@ jobs:
 | **RAM**      | ≥ 4GB                                                                                                               |
 | **CPU**      | ≥ 2 vCPU                                                                                                            |
 | **Storage**  | ≥ 30GB SSD                                                                                                          |
-| **Provider** | Azure for Students (Standard_B2s — miễn phí $100 credit, không cần thẻ tín dụng), DigitalOcean, hoặc bất kỳ VPS nào | 48.193.45.112 |
+| **Provider** | Azure for Students (Standard_B2s — miễn phí $100 credit, không cần thẻ tín dụng), DigitalOcean, hoặc bất kỳ VPS nào | 52.253.105.93 |
+|  |
 
 💻 **Bước 1 — Kết nối SSH và Bảo mật Server:**
 
