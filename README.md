@@ -15,19 +15,23 @@ Hệ thống Xử lý Hỗ trợ Khách hàng (CSKH) Tự động hóa bằng AI
 ## 🚀 Tính năng nổi bật (Key Features)
 
 ### 🤖 Phân tích AI Tự động (Smart AI Analysis)
+
 - Tự động phân tích sắc thái cảm xúc (Sentiment) của khách hàng (POSITIVE, NEUTRAL, ANGRY).
 - Tự động phân loại danh mục (Category) và gán mức độ ưu tiên (Priority) dựa trên mức độ nghiêm trọng.
 - AI tự động tóm tắt nội dung Ticket và soạn sẵn bản nháp câu trả lời (Suggested Reply) cho nhân viên CSKH.
 
 ### ⚡ Xử lý Bất đồng bộ (Event-Driven Architecture)
+
 - Tích hợp **RabbitMQ** làm Message Queue. Client khi tạo Ticket sẽ nhận được response ngay lập tức (< 100ms) mà không phải chờ AI xử lý.
 - AI Worker (Python) hoạt động độc lập ngầm (Background Job), nhận tin nhắn từ RabbitMQ và đẩy kết quả phân tích về Database.
 
 ### 🛡️ Bảo mật & Hiệu năng
+
 - Tích hợp **Redis** để giới hạn số lần gọi API (Rate Limiting) nhằm chống spam (DDoS/Brute Force).
 - Xác thực bằng **JWT (JSON Web Token)** với phân quyền (Role-based Access Control) phân tách rõ ràng giữa CUSTOMER, AGENT, và ADMIN.
 
 ### 💻 Giao diện Portal Trực quan
+
 - Frontend xây dựng bằng **React & Vite** với thiết kế hiện đại, mượt mà.
 - **Dashboard CSKH** hiển thị danh sách ticket theo mức độ ưu tiên ưu tiên xử lý các vé `URGENT` và khách hàng `ANGRY` lên đầu.
 
@@ -35,15 +39,15 @@ Hệ thống Xử lý Hỗ trợ Khách hàng (CSKH) Tự động hóa bằng AI
 
 ## 🛠️ Công nghệ sử dụng (Tech Stack)
 
-| Thành phần | Công nghệ | Chi tiết |
-| :--- | :--- | :--- |
-| **Frontend** | React, Vite, Tailwind CSS | Xây dựng Single Page App (SPA) với UI mượt mà |
-| **Backend API** | Node.js, Express, Prisma ORM | Xử lý Core Business Logic, Authentication, API |
-| **AI Worker** | Python, Google GenAI SDK | Chuyên xử lý tác vụ nặng giao tiếp với LLM |
-| **Database** | PostgreSQL | Lưu trữ dữ liệu quan hệ chặt chẽ (Users, Tickets) |
-| **Message Queue**| RabbitMQ | Điều phối luồng xử lý bất đồng bộ giữa Node và Python |
-| **Caching** | Redis | Rate Limiting, tối ưu hóa truy xuất dữ liệu |
-| **DevOps** | Docker, Docker Compose, Nginx | Container hóa 7 services, Reverse Proxy cho Production |
+| Thành phần        | Công nghệ                     | Chi tiết                                               |
+| :---------------- | :---------------------------- | :----------------------------------------------------- |
+| **Frontend**      | React, Vite, Tailwind CSS     | Xây dựng Single Page App (SPA) với UI mượt mà          |
+| **Backend API**   | Node.js, Express, Prisma ORM  | Xử lý Core Business Logic, Authentication, API         |
+| **AI Worker**     | Python, Google GenAI SDK      | Chuyên xử lý tác vụ nặng giao tiếp với LLM             |
+| **Database**      | PostgreSQL                    | Lưu trữ dữ liệu quan hệ chặt chẽ (Users, Tickets)      |
+| **Message Queue** | RabbitMQ                      | Điều phối luồng xử lý bất đồng bộ giữa Node và Python  |
+| **Caching**       | Redis                         | Rate Limiting, tối ưu hóa truy xuất dữ liệu            |
+| **DevOps**        | Docker, Docker Compose, Nginx | Container hóa 7 services, Reverse Proxy cho Production |
 
 ---
 
@@ -67,13 +71,16 @@ smart-ticketing-system/
 ## 💻 Hướng dẫn chạy dự án cục bộ (Local Development)
 
 ### 1. Khởi động hạ tầng phụ trợ
+
 Dự án sử dụng Docker để giả lập hạ tầng gồm PostgreSQL, Redis, và RabbitMQ.
+
 ```bash
 # Tại thư mục gốc của dự án
 docker compose up -d
 ```
 
 ### 2. Cấu hình Backend (Node.js)
+
 ```bash
 cd src/backend
 npm install
@@ -83,6 +90,7 @@ npm run dev
 ```
 
 ### 3. Cấu hình AI Worker (Python)
+
 ```bash
 cd src/worker
 python -m venv venv
@@ -93,6 +101,7 @@ python worker.py
 ```
 
 ### 4. Cấu hình Frontend (React)
+
 ```bash
 cd src/frontend
 npm install
@@ -102,17 +111,17 @@ npm run dev
 ---
 
 ## 🌍 Triển khai lên Production (Azure VPS)
+
 Dự án được container hóa toàn bộ bằng Docker và triển khai thực tế trên môi trường **Azure VPS (Ubuntu 22.04 LTS)**.
 Tất cả 7 services (Nginx Reverse Proxy, Frontend, Backend, Worker, Database PostgreSQL, RabbitMQ Message Queue, Redis Cache) đều hoạt động độc lập và bảo mật với SSL/HTTPS.
-
-Bạn có thể xem file `docker-compose.prod.yml` và tham khảo tài liệu [DEPLOYMENT_PLAN.md](./docs/DEPLOYMENT_PLAN.md) hoặc [PLAN.md - Task 6.1](./docs/PLAN.md) để biết thêm chi tiết.
 
 ---
 
 ## 📖 Hệ thống Tài liệu Thiết kế
+
 Các tài liệu thiết kế chi tiết (Software Development Lifecycle) nằm tại thư mục [docs/](./docs/):
+
 - **Yêu cầu dự án:** [REQUIREMENTS.md](./docs/REQUIREMENTS.md)
 - **Kiến trúc hệ thống:** [ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 - **Thiết kế cơ sở dữ liệu:** [DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md)
 - **Đặc tả API:** [API_SPECIFICATION.md](./docs/API_SPECIFICATION.md)
-- **Kế hoạch triển khai:** [PLAN.md](./docs/PLAN.md)
