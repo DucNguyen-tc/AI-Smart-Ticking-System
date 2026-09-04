@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: cd src/backend && npm ci
       - name: Lint Backend
         run: cd src/backend && npx eslint src/ --max-warnings=0
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: cd src/frontend && npm ci
       - name: Lint Frontend
         run: cd src/frontend && npm run lint
